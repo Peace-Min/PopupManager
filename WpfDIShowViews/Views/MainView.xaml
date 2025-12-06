@@ -6,10 +6,65 @@
         xmlns:local="clr-namespace:WpfDIShowViews.Views"
         mc:Ignorable="d"
         Title="MainView" Height="450" Width="800">
-  <Grid>
-    <Button 
-      Content="Show SubView" 
-      Margin="10"
-      Command="{Binding ShowSubViewCommand}"/>
-  </Grid>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Column="0" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Button Content="Show SubView1" Margin="10" Command="{Binding ShowSubViewCommand}" CommandParameter="1"/>
+                <Button Content="Show SubView2" Margin="10" Command="{Binding ShowSubViewCommand}" CommandParameter="2"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <Button Content="Show SubView3" Margin="10" Command="{Binding ShowSubViewCommand}" CommandParameter="3"/>
+                <Button Content="Show SubView4" Margin="10" Command="{Binding ShowSubViewCommand}" CommandParameter="4"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Column="0" Grid.Row="1">
+            <!-- Left Minimized Popups -->
+            <Menu>
+                <MenuItem Header="{Binding LeftCount, StringFormat='팝업 ({0})'}">
+                    <MenuItem.ItemsSource>
+                        <Binding Path="LeftMinimizedPopups"/>
+                    </MenuItem.ItemsSource>
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding SubData.StringData}"/>
+                            <Setter Property="Command" Value="{Binding DataContext.RestorePopupCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+            </Menu>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.Row="1">
+            <!-- Right Minimized Popups -->
+            <Menu>
+                <MenuItem Header="{Binding RightCount, StringFormat='팝업 ({0})'}">
+                    <MenuItem.ItemsSource>
+                        <Binding Path="RightMinimizedPopups"/>
+                    </MenuItem.ItemsSource>
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding SubData.StringData}"/>
+                            <Setter Property="Command" Value="{Binding DataContext.RestorePopupCommand, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
+            </Menu>
+        </Grid>
+    </Grid>
 </Window>

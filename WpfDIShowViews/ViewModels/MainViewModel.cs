@@ -10,32 +10,98 @@ using System.Windows;
 using System.Windows.Input;
 using WpfDIShowViews.Services;
 
+
 namespace WpfDIShowViews.ViewModels
 {
-  public class MainViewModel : ViewModelBase
-  {
-    private readonly IViewService _viewService;
-
-    private void ShowSubView(object? _)
+    public class MainViewModel : ViewModelBase
     {
-      _viewService.ShowSubView(new Models.SubData { StringData = "가나다", IntData = 123 });
-    }
+        private readonly IDialogService _dialogService;
+        private readonly IPopupManager _popupManager;
+        private readonly IServiceProvider _serviceProvider;
 
-    protected override void OnWindowLoaded(object sender, RoutedEventArgs e)
-    {
-      MessageBox.Show("MainWindow Loaded");
-    }
+        public System.Collections.ObjectModel.ObservableCollection<ViewModelBase> MinimizedPopups => _popupManager.MinimizedPopups;
 
-    protected override void OnWindowClosing(object? sender, CancelEventArgs e)
-    {
-      MessageBox.Show("MainWindow Closing");
-    }
+        public IEnumerable<ViewModelBase> LeftMinimizedPopups => MinimizedPopups.Where(vm => (vm as Models.IGroupableViewModel)?.GroupName == "Left");
+        public IEnumerable<ViewModelBase> RightMinimizedPopups => MinimizedPopups.Where(vm => (vm as Models.IGroupableViewModel)?.GroupName == "Right");
 
-    public MainViewModel(IViewService viewService)
-    {
-      _viewService = viewService;
-    }
+        public int LeftCount => LeftMinimizedPopups.Count();
+        public int RightCount => RightMinimizedPopups.Count();
 
-    public ICommand ShowSubViewCommand => new RelayCommand<object>(ShowSubView);
-  }
+        private void ShowSubView(object? obj)
+        {
+            if (obj == null) return;
+            string type = (string)obj;
+
+            ViewModelBase? viewModel = null;
+            Models.SubData subData = new Models.SubData { StringData = "Data for " + type, IntData = int.Parse(type) };
+
+            switch (type)
+            {
+                case "1":
+                    viewModel = _serviceProvider.GetRequiredService<WpfDIShowViews.ViewModels.Left.SubViewModel1>();
+                    break;
+                case "2":
+                    viewModel = _serviceProvider.GetRequiredService<WpfDIShowViews.ViewModels.Left.SubViewModel2>();
+                    break;
+                case "3":
+                    viewModel = _serviceProvider.GetRequiredService<WpfDIShowViews.ViewModels.Right.SubViewModel3>();
+                    break;
+                case "4":
+                    viewModel = _serviceProvider.GetRequiredService<WpfDIShowViews.ViewModels.Right.SubViewModel4>();
+                    break;
+            }
+
+            if (viewModel != null)
+            {
+                var minimized = _popupManager.MinimizedPopups.FirstOrDefault(vm => vm.GetType() == viewModel.GetType());
+                if (minimized != null)
+                {
+                    if (minimized is IParameterReceiver receiver)
+                    {
+                        receiver.ReceiveParameter(subData);
+                    }
+                    _popupManager.Restore(minimized);
+                }
+                else
+                {
+                    if (viewModel is IParameterReceiver receiver)
+                    {
+                        receiver.ReceiveParameter(subData);
+                    }
+                    _dialogService.Show(viewModel);
+                }
+            }
+        }
+
+
+
+        public MainViewModel(IDialogService dialogService, IPopupManager popupManager, IServiceProvider serviceProvider)
+        {
+            _dialogService = dialogService;
+            _popupManager = popupManager;
+            _serviceProvider = serviceProvider;
+
+            _popupManager.MinimizedPopups.CollectionChanged += (s, args) =>
+            {
+                RaisePropertyChanged(nameof(LeftMinimizedPopups));
+                RaisePropertyChanged(nameof(RightMinimizedPopups));
+                RaisePropertyChanged(nameof(LeftCount));
+                RaisePropertyChanged(nameof(RightCount));
+            };
+        }
+
+        public ICommand ShowSubViewCommand => new RelayCommand<object>(ShowSubView);
+
+        public ICommand RestorePopupCommand => new RelayCommand<ViewModelBase>(RestorePopup);
+        private void RestorePopup(ViewModelBase? vm)
+        {
+            if (vm != null) _popupManager.Restore(vm);
+        }
+
+        public ICommand ClosePopupCommand => new RelayCommand<ViewModelBase>(ClosePopup);
+        private void ClosePopup(ViewModelBase? vm)
+        {
+            if (vm != null) _popupManager.Remove(vm);
+        }
+    }
 }

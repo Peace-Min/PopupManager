@@ -1,0 +1,14 @@
+<Window x:Class="WpfDIShowViews.Views.Right.SubView4"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="SubView4" Height="450" Width="800">
+  <StackPanel>
+    <TextBlock Text="SubView 4" FontSize="30" Padding="10"/>
+    <TextBlock Text="{Binding SubData.StringData}" FontSize="20" Padding="10"/>
+    <Button Content="최소화" Command="{Binding MinimizeCommand}"/>
+    <Button Content="종료" Command="{Binding CloseCommand}"/>
+  </StackPanel>
+</Window>
